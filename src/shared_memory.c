@@ -52,19 +52,16 @@ void unlock_memory(shared_data_t* data) {
 #define SHM_NAME "/my_shared_memory"
 
 shared_data_t* create_shared_memory() {
-    int fd = shm_open(SHM_NAME, O_CREAT | O_RDWR, 0666);
-    if (fd == -1) { perror("shm_open"); return NULL; }
+    HANDLE hMapFile = CreateFileMappingA(
+        INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, sizeof(shared_data_t), SHM_NAME);
+    if (hMapFile == NULL) return NULL;
 
-    // Set size
-    ftruncate(fd, sizeof(shared_data_t));
-    shared_data_t* ptr = (shared_data_t*)mmap(0, sizeof(shared_data_t), PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+    shared_data_t* ptr = (shared_data_t*)MapViewOfFile(hMapFile, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(shared_data_t));
     
-    // Initialize mutex (process-shared)
-    pthread_mutexattr_t attr;
-    pthread_mutexattr_init(&attr);
-    pthread_mutexattr_setpshared(&attr, PTHREAD_PROCESS_SHARED);
-    pthread_mutex_init(&ptr->mutex, &attr);
-    
+    if (ptr != NULL) {
+        // Create the Mutex for Windows
+        ptr->mutex = CreateMutexA(NULL, FALSE, "Local\\MyMutex");
+    }
     return ptr;
 }
 
