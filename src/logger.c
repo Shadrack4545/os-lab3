@@ -6,12 +6,12 @@
     #include <windows.h>
     FILE* log_file = NULL;
     void init_logger() { log_file = fopen("process.log", "a"); }
-    void write_log(int pid, int counter, const char* msg) {
+    void write_log(process_id_t pid, int counter, const char* msg) {
         if (!log_file) return;
         SYSTEMTIME st;
         GetLocalTime(&st);
-        fprintf(log_file, "[%02d.%02d.%04d %02d:%02d:%02d.%03d] PID:%d Counter:%d %s\n", 
-                st.wDay, st.wMonth, st.wYear, st.wHour, st.wMinute, st.wSecond, st.wMilliseconds, pid, counter, msg);
+        fprintf(log_file, "[%02d.%02d.%04d %02d:%02d:%02d.%03d] PID:%lu Counter:%d %s\n", 
+                st.wDay, st.wMonth, st.wYear, st.wHour, st.wMinute, st.wSecond, st.wMilliseconds, (unsigned long)pid, counter, msg);
         fflush(log_file);
     }
     void close_logger() { if (log_file) fclose(log_file); }
@@ -19,7 +19,7 @@
     #include <unistd.h>
     FILE* log_file = NULL;
     void init_logger() { log_file = fopen("process.log", "a"); }
-    void write_log(int pid, int counter, const char* msg) {
+    void write_log(process_id_t pid, int counter, const char* msg) {
         if (!log_file) return;
         struct timespec ts;
         clock_gettime(CLOCK_REALTIME, &ts);

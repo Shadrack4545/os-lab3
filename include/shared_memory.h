@@ -4,21 +4,22 @@
 #ifdef _WIN32
     #include <windows.h>
     typedef HANDLE mutex_t;
-    typedef int pid_t;    // <--- MAKE SURE THIS LINE IS HERE
+    // On Windows, use DWORD instead of pid_t to avoid conflicts
+    typedef DWORD process_id_t; 
 #else
     #include <pthread.h>
     #include <semaphore.h>
+    #include <sys/types.h>
     typedef pthread_mutex_t mutex_t;
+    typedef pid_t process_id_t;
 #endif
 
 // The structure that will be shared between processes
 typedef struct {
-    pid_t master_pid; // To identify who is the "master" program (Req #6)
+    process_id_t master_pid; // To identify who is the "master" program (Req #6)
     int counter;
     mutex_t mutex;    // The lock to prevent race conditions
 } shared_data_t;
-
-// ... rest of the file ...
 
 // Functions to manage shared memory
 shared_data_t* create_shared_memory();
